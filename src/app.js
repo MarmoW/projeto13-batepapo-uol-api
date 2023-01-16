@@ -43,7 +43,7 @@ server.post("/participants", async (req, res) => {
 server.get("/participants", async (req, res) => {
     try{
         const listaParticipantes = await db.collect("participantes").find()
-        res.send(listaParticipantes)
+        res.send(listaParticipantes.toArray())
 
     }catch(err){
         console.log(err)
