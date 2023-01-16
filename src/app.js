@@ -120,16 +120,15 @@ server.post("/status", async (req, res) => {
 
 })
 
-setInterval(RemoveInativo(), 15000)
+setInterval(RemoveInativo, 15000)
 
 async function RemoveInativo(){
     const corteTempo = Date.now() - 10000
-    const achaQuemSaiu = await db.collection("participants").find({lastStatus: {$lt: corteTempo}})
-        .then(user => await db.collection("messages").insertOne({from: user.name, to:"Todos", text:"sai da sala...", type:"status",  time: dayjs().format("HH:mm:ss")}))
-    
+    const achaQuemSaiu = await db.collection("participants").find({lastStatus: {$lt: corteTempo}}).toArray()
+    achaQuemSaiu.forEach(async user => await db.collection("messages").insertOne({from: user.name, to:"Todos", text:"sai da sala...", type:"status",  time: dayjs().format("HH:mm:ss")}))
+
     const removeUser = await db.collection("participants").deleteMany({lastStatus: {$lt: corteTempo} })
 }
-
 
 server.listen(5000, () => {
     console.log('Funcionando')
