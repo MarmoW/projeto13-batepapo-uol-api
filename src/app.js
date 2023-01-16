@@ -24,19 +24,19 @@ server.post("/participants", async (req, res) => {
     })
 
     const validation = usuarioSchema.validate(usuario)
-
+    if(validation.error) return res.status(422).send(validation.error.message)
     try{
         const userJaCadastrado = await db.collection("participants").findOne({name: usuario})
         
-        if(userJaCadastrado) return res.status(409).send("Já existe um usuário com esse nome")
+        if(userJaCadastrado) return res.sendStatus(409)
         const cadastrar = await db.collection("participants").insertOne({name: usuario, lastStatus: Date.now()})
         
         const conectou = await db.collection("messages").insertOne({name: usuario, to:"Todos", text:"entra na sala...", type:"status",  time: dayjs().format("HH:mm:ss")})
         
-        res.send("usuário cadastrado")
+        res.sendStatus(201)
         
     }catch(err){
-        res.status(422)
+        res.sendStatus(422)
     }
 })
 
