@@ -60,7 +60,7 @@ server.post("/messages", async (req, res) => {
     
     if(user === undefined) return res.sendStatus(422)
     
-    const userCadastrado = await db.colletion("participants").findOne({name: user})
+    const userCadastrado = await db.collection("participants").findOne({name: user})
 
     if(!userCadastrado) return res.sendStatus(422)
 
