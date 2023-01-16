@@ -104,9 +104,31 @@ server.get("/messages", async (req, res) => {
     
 })
 
-server.post("/status", (req, res) => {
-    
+server.post("/status", async (req, res) => {
+    const {user} = req.headers
+
+    try{
+        const findUser = await db.collection("participants").findOne({name: user})
+        if(findUser){
+            const updateUser = await db.collection("participants").updateOne({name:user} , {$set:{lastStatus: Date.now()}})
+            return res.status(200).send()
+        }
+        res.status(404).send()
+    }catch(err){
+        res.status(404).send()
+    }
+
 })
+
+setInterval(RemoveInativo(), 15000)
+
+async function RemoveInativo(){
+    const corteTempo = Date.now() - 10000
+    const achaQuemSaiu = await db.collection("participants").find({lastStatus: {$lt: corteTempo}})
+        .then(user => await db.collection("messages").insertOne({from: user.name, to:"Todos", text:"sai da sala...", type:"status",  time: dayjs().format("HH:mm:ss")}))
+    
+    const removeUser = await db.collection("participants").deleteMany({lastStatus: {$lt: corteTempo} })
+}
 
 
 server.listen(5000, () => {
