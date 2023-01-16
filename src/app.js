@@ -23,7 +23,7 @@ server.post("/participants", async (req, res) => {
         name: joi.string().required()
     })
 
-    const validation = usuarioSchema.validate(usuario)
+    const validation = usuarioSchema.validate({name: usuario})
     if(validation.error) return res.status(422).send(validation.error.message)
     try{
         const userJaCadastrado = await db.collection("participants").findOne({name: usuario})
