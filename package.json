@@ -5,8 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start1": "nodemon src/app.js",
-    "start": "node src/app.js"
+    "start": "nodemon src/app.js"
   },
   "author": "",
   "license": "ISC",

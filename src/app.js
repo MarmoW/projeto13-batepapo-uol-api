@@ -7,7 +7,7 @@ import joi from "joi"
 
 dotenv.config()
 
-const mongoClient = new MongoClient("mongodb://localhost:27017")
+const mongoClient = new MongoClient(process.env.DATABASE_URL)
 let db
 await mongoClient.connect()
 db = mongoClient.db()
