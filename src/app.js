@@ -42,12 +42,12 @@ server.post("/participants", async (req, res) => {
 
 server.get("/participants", async (req, res) => {
     try{
-        const listaParticipantes = await db.collect("participantes").find()
-        res.send(listaParticipantes.toArray())
+        const listaParticipantes = await db.collect("participantes").find().toArray()
+        res.send(listaParticipantes)
 
     }catch(err){
         console.log(err)
-        res.send(err)
+        res.status(500).send(err)
     }
 
 })
@@ -65,8 +65,8 @@ server.post("/messages", async (req, res) => {
      })
 
     const validate = messageSchema.validate(mensagem)
-    console.log(user)
     
+    if(validate.error) return res.status(422).send(validade.error)
     try{
         const userOnline = await db.collection("participants").find().toArray()
         
@@ -93,12 +93,17 @@ server.get("/messages", async (req, res) => {
         if(limitMessage){
             const mensagens = await db.collection("messages").find( {$or: [{from:user}, {to:"todos"}, {to:user}]} ).toArray()
             let mensagensLimit = mensagens.slice(-limitMessage)
-            res.send(mensagensLimit)
+            return res.send(mensagensLimit)
         
     }
+    if(limitMessage === undefined){
+            const mensagens = await db.collection("messages").find( {$or: [{from:user}, {to:"todos"}, {to:user}]} ).toArray()
+            return res.send(mensagens)
+    
+}
 
     }catch(err){
-        res.send("Não foi possível buscar as mensagens")
+        res.status(422).send("Não foi possível buscar as mensagens")
         console.log(err)
 }
     
