@@ -42,7 +42,7 @@ server.post("/participants", async (req, res) => {
 
 server.get("/participants", async (req, res) => {
     try{
-        const listaParticipantes = await db.collect("participants").find().toArray()
+        const listaParticipantes = await db.collection("participants").find().toArray()
         res.send(listaParticipantes)
 
 
@@ -57,8 +57,8 @@ server.post("/messages", async (req, res) => {
     const {to, text, type} = req.body
     const {user} = req.headers
     let mensagem = req.body
-    console.log(mensagem)
-
+    console.log(user)
+    if(user === undefined) return res.sendStatus(422)
     const messageSchema = joi.object({
         to: joi.string().required(),
         text: joi.string().required(),
@@ -90,16 +90,21 @@ server.get("/messages", async (req, res) => {
     const limitMessage = req.query.limit
 
     console.log(limitMessage, user)
+    
+    const limitScheme = joi.number().positive()
+    const validation = limitScheme.validate(limitMessage)
+    if(validation.error) return res.status(422).send(validation.error)
+
     try{
         if(limitMessage){
-            const mensagens = await db.collection("messages").find( {$or: [{from:user}, {to:"todos"}, {to:user}]} ).toArray()
-            let mensagensLimit = mensagens.slice(-limitMessage)
+            const mensagens = await db.collection("messages").find( {$or: [{from:user}, {to:"Todos"}, {to:user}]} ).toArray()
+            let mensagensLimit = mensagens.slice(-limitMessage).reverse()
             return res.send(mensagensLimit)
         
     }
     if(limitMessage === undefined){
-            const mensagens = await db.collection("messages").find( {$or: [{from:user}, {to:"todos"}, {to:user}]} ).toArray()
-            return res.send(mensagens)
+            const mensagens = await db.collection("messages").find( {$or: [{from:user}, {to:"Todos"}, {to:user}]} ).toArray()
+            return res.send(mensagens.reverse())
     
 }
 
