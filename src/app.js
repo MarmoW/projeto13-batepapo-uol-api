@@ -31,7 +31,7 @@ server.post("/participants", async (req, res) => {
         if(userJaCadastrado) return res.sendStatus(409)
         const cadastrar = await db.collection("participants").insertOne({name: usuario, lastStatus: Date.now()})
         
-        const conectou = await db.collection("messages").insertOne({name: usuario, to:"Todos", text:"entra na sala...", type:"status",  time: dayjs().format("HH:mm:ss")})
+        const conectou = await db.collection("messages").insertOne({from: usuario, to:"Todos", text:"entra na sala...", type:"status",  time: dayjs().format("HH:mm:ss")})
         
         res.sendStatus(201)
         
