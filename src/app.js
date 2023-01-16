@@ -9,6 +9,8 @@ dotenv.config()
 
 const mongoClient = new MongoClient("mongodb://localhost:27017")
 let db
+await mongoClient.connect()
+db = mongoClient.db()
 
 
 const server = express()
@@ -16,21 +18,20 @@ server.use(express.json())
 server.use(cors())
 
 server.post("/participants", async (req, res) => {
-    let usuario = req.data
+    let usuario = req.body.name
     const usuarioSchema = joi.object({
         name: joi.string().required()
     })
+
     const validation = usuarioSchema.validate(usuario)
 
-    console.log(validation)
-
     try{
-        const userJaCadastrado = await db.collection("participants").findOne({usuario})
+        const userJaCadastrado = await db.collection("participants").findOne({name: usuario})
         
         if(userJaCadastrado) return res.status(409).send("Já existe um usuário com esse nome")
         const cadastrar = await db.collection("participants").insertOne({name: usuario, lastStatus: Date.now()})
         
-        const conectou = await db.collection("messages").insertOne({name: usuario, to:"Todos", text:"entra na sala...", type:"status",  time: dayjs("HH:mm:ss")})
+        const conectou = await db.collection("messages").insertOne({name: usuario, to:"Todos", text:"entra na sala...", type:"status",  time: dayjs().format("HH:mm:ss")})
         
         res.send("usuário cadastrado")
         
@@ -52,9 +53,10 @@ server.get("/participants", async (req, res) => {
 })
 
 server.post("/mensages", async (req, res) => {
-    let mensagens = req.data
-    let userheader = req.header.user
-    console.log(userheader)
+    const {to, text, type} = req.body
+    const {user} = req.headers
+    let mensagem = req.body
+    console.log(mensagem)
 
     const mensageSchema = joi.object({
         to: joi.string().required(),
@@ -62,12 +64,15 @@ server.post("/mensages", async (req, res) => {
         type: joi.string().valid("message", "private_message").required()
      })
 
-    const validate = mensageSchema.validate(mensagens)
-
+    const validate = mensageSchema.validate(mensagem)
+    console.log(user)
+    
     try{
-        const userOnline = await db.collection("participantes").findOne({userheader})
-        if(!userOnline) return res.send("Você foi desconectado")
-        const mensagemEnviada = await db.collection("mensages").insertOne({from: userheader,to: mensagens.to ,text: mensagens.text ,type: mensagens.type ,time: dayjs("HH:mm:ss")})
+        const userOnline = await db.collection("participants").find().toArray()
+        console.log(userOnline)
+        if(userOnline) return res.send("Você foi desconectado")
+        
+        const mensagemEnviada = await db.collection("mensages").insertOne({from: user,to: to,text: text ,type: type ,time: dayjs().format("HH:mm:ss")})
 
     }catch(err){
         res.status(422)
@@ -79,8 +84,19 @@ server.post("/mensages", async (req, res) => {
 })
 
 server.get("/mensages", (req, res) => {
-    let userheader = req.header.user
-    let limitMensage = req.query
+    const {user} = req.headers
+    const limitMensage = req.query
+    console.log(limitMensage, user)
+    try{
+        if(limitMensage){
+        
+    }
+
+    }catch(err){
+        res.send("Não foi possível buscar as mensagens")
+        console.log(err)
+}
+    
 })
 
 server.post("/status", (req, res) => {
