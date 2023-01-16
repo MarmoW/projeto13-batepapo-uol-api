@@ -42,8 +42,9 @@ server.post("/participants", async (req, res) => {
 
 server.get("/participants", async (req, res) => {
     try{
-        const listaParticipantes = await db.collect("participantes").find().toArray()
+        const listaParticipantes = await db.collect("participants").find().toArray()
         res.send(listaParticipantes)
+
 
     }catch(err){
         console.log(err)
@@ -66,7 +67,7 @@ server.post("/messages", async (req, res) => {
 
     const validate = messageSchema.validate(mensagem)
     
-    if(validate.error) return res.status(422).send(validade.error)
+    if(validate.error) return res.status(422).send(validate.error)
     try{
         const userOnline = await db.collection("participants").find().toArray()
         
